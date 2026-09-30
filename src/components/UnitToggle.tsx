@@ -5,34 +5,42 @@ interface UnitToggleProps {
   onChange: (unit: Unit) => void;
 }
 
-/** Alternador de unidade Celsius/Fahrenheit, acessível por teclado. */
+const options: ReadonlyArray<{ label: string; symbol: string; value: Unit }> = [
+  { label: 'Celsius', symbol: '°C', value: 'celsius' },
+  { label: 'Fahrenheit', symbol: '°F', value: 'fahrenheit' },
+];
+
 export default function UnitToggle({ unit, onChange }: UnitToggleProps) {
   return (
-    <div
-      role="group"
-      aria-label="Unidade de temperatura"
-      className="inline-flex rounded-lg border border-white/10 bg-white/5 p-1 backdrop-blur-md"
-    >
-      <button
-        type="button"
-        aria-pressed={unit === 'celsius'}
-        onClick={() => onChange('celsius')}
-        className={`rounded-md px-3 py-1 text-sm font-semibold transition ${
-          unit === 'celsius' ? 'bg-accent-500 text-white' : 'text-white/60 hover:text-white'
-        }`}
-      >
-        °C
-      </button>
-      <button
-        type="button"
-        aria-pressed={unit === 'fahrenheit'}
-        onClick={() => onChange('fahrenheit')}
-        className={`rounded-md px-3 py-1 text-sm font-semibold transition ${
-          unit === 'fahrenheit' ? 'bg-accent-500 text-white' : 'text-white/60 hover:text-white'
-        }`}
-      >
-        °F
-      </button>
-    </div>
+    <fieldset className="inline-flex border border-white/10 bg-white/5 p-1 shadow-glass backdrop-blur-md">
+      <legend className="sr-only">Unidade de temperatura</legend>
+      {options.map((option) => {
+        const isActive = unit === option.value;
+
+        return (
+          <label className="cursor-pointer" key={option.value}>
+            <input
+              aria-label={option.label}
+              checked={isActive}
+              className="peer sr-only"
+              name="temperature-unit"
+              onChange={() => onChange(option.value)}
+              type="radio"
+              value={option.value}
+            />
+            <span
+              aria-hidden="true"
+              className={`inline-flex min-h-11 min-w-11 items-center justify-center px-4 py-2 font-semibold transition-colors peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-inset peer-focus-visible:ring-white ${
+                isActive
+                  ? 'bg-accent-600 text-white'
+                  : 'text-white/70 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              {option.symbol}
+            </span>
+          </label>
+        );
+      })}
+    </fieldset>
   );
 }

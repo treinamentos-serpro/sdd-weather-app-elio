@@ -1,47 +1,76 @@
-import { useState, type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
 
 interface SearchBarProps {
   onSearch: (city: string) => void;
   disabled?: boolean;
 }
 
-/** Barra de busca de cidade. Bloqueia submit com input vazio. */
-export default function SearchBar({ onSearch, disabled }: SearchBarProps) {
-  const [value, setValue] = useState('');
+export default function SearchBar({ onSearch, disabled = false }: SearchBarProps) {
+  const [city, setCity] = useState('');
+  const [validationMessage, setValidationMessage] = useState<string | null>(null);
 
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    const trimmed = value.trim();
-    if (!trimmed) return;
-    onSearch(trimmed);
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (disabled) {
+      return;
+    }
+
+    const normalizedCity = city.trim();
+
+    if (!normalizedCity) {
+      setValidationMessage('Informe uma cidade');
+      return;
+    }
+
+    setValidationMessage(null);
+    onSearch(normalizedCity);
   }
 
   return (
-    <form role="search" onSubmit={handleSubmit} className="w-full max-w-md">
-      <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-md focus-within:border-accent-500">
-        <span aria-hidden="true" className="text-white/50">
-          🔍
-        </span>
-        <label htmlFor="city-search" className="sr-only">
-          Buscar cidade
-        </label>
+    <form
+      className="w-full border border-white/10 bg-white/5 p-4 shadow-glass backdrop-blur-md sm:p-6"
+      onSubmit={handleSubmit}
+      aria-label="Buscar cidade"
+      role="search"
+    >
+      <label className="mb-2 block font-medium text-white" htmlFor="city-search">
+        Buscar cidade
+      </label>
+      <div className="flex flex-col gap-3 sm:flex-row">
         <input
+          aria-describedby={
+            validationMessage ? 'search-privacy search-validation' : 'search-privacy'
+          }
+          aria-invalid={validationMessage ? true : undefined}
+          className="min-w-0 flex-1 border border-white/20 bg-night-800 px-4 py-3 text-white placeholder:text-white/50 focus:border-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-400 disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={disabled}
           id="city-search"
-          type="text"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="Buscar cidade…"
-          autoComplete="off"
-          className="flex-1 bg-transparent text-white placeholder-white/40 outline-none"
+          name="city"
+          onChange={(event) => {
+            setCity(event.target.value);
+            setValidationMessage(null);
+          }}
+          placeholder="Ex.: São Paulo"
+          type="search"
+          value={city}
         />
         <button
+          className="min-h-11 bg-accent-600 px-5 py-3 font-semibold text-white transition-shadow hover:ring-2 hover:ring-accent-400 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-night-900 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:ring-0"
+          disabled={disabled}
           type="submit"
-          disabled={disabled || !value.trim()}
-          className="rounded-lg bg-accent-500 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Buscar
         </button>
       </div>
+      {validationMessage ? (
+        <p className="mt-2 text-sm font-medium text-red-300" id="search-validation" role="alert">
+          {validationMessage}
+        </p>
+      ) : null}
+      <p className="mt-3 text-sm text-white/70" id="search-privacy">
+        O texto da busca é enviado ao serviço de geocodificação Open-Meteo.
+      </p>
     </form>
   );
 }
