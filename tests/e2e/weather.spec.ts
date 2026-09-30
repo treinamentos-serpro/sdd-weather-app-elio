@@ -60,11 +60,13 @@ test('busca uma cidade, exibe a previsão e converte a temperatura para Fahrenhe
 
   await expect(page.getByRole('heading', { name: 'São Paulo' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Previsão de 5 dias' })).toBeVisible();
-  await expect(page.getByText('0 °C')).toBeVisible();
+  const current = page.getByRole('region', { name: 'Clima atual em São Paulo' });
+  await expect(current.getByText('0 °C', { exact: true })).toBeVisible();
 
-  await page.getByRole('radio', { name: 'Fahrenheit' }).click();
+  // O input é sr-only; o <span> visual do label intercepta o clique.
+  await page.getByRole('radio', { name: 'Fahrenheit' }).check({ force: true });
 
-  await expect(page.getByText('32 °F')).toBeVisible();
+  await expect(current.getByText('32 °F', { exact: true })).toBeVisible();
 });
 
 test('mostra estado vazio quando o geocoding não retorna resultados', async ({ page }) => {
@@ -86,7 +88,8 @@ test('renderiza o clima no viewport mobile de 375x812', async ({ page }) => {
   await page.getByRole('button', { name: 'Buscar' }).click();
 
   await expect(page.getByRole('heading', { name: 'São Paulo' })).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Clima atual em São Paulo' })).toBeVisible();
-  await expect(page.getByText('0 °C')).toBeVisible();
+  const current = page.getByRole('region', { name: 'Clima atual em São Paulo' });
+  await expect(current).toBeVisible();
+  await expect(current.getByText('0 °C', { exact: true })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Previsão de 5 dias' })).toBeVisible();
 });
