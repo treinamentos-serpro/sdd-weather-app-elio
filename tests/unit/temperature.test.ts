@@ -1,30 +1,40 @@
-import { describe, it, expect } from 'vitest';
-import {
-  toFahrenheit,
-  convertTemperature,
-  formatTemperature,
-  unitLabel,
-} from '../../src/lib/temperature';
+import { describe, expect, it } from 'vitest';
+import { convertTemperature, formatTemperature, unitLabel } from '../../src/lib/temperature';
 
-describe('temperature', () => {
-  it('converte Celsius para Fahrenheit corretamente', () => {
-    expect(toFahrenheit(0)).toBe(32);
-    expect(toFahrenheit(100)).toBe(212);
-    expect(toFahrenheit(-40)).toBe(-40);
+describe('convertTemperature', () => {
+  it.each([
+    [0, 32],
+    [100, 212],
+    [-40, -40],
+  ])('converte %s °C para %s °F', (celsius, fahrenheit) => {
+    expect(convertTemperature(celsius, 'fahrenheit')).toBe(fahrenheit);
   });
 
-  it('convertTemperature respeita a unidade', () => {
-    expect(convertTemperature(20, 'celsius')).toBe(20);
-    expect(convertTemperature(0, 'fahrenheit')).toBe(32);
+  it('mantém Celsius e retorna null para temperatura ausente', () => {
+    expect(convertTemperature(18.4, 'celsius')).toBe(18);
+    expect(convertTemperature(null, 'fahrenheit')).toBeNull();
   });
 
-  it('formata com símbolo de grau e arredondamento', () => {
-    expect(formatTemperature(20.4, 'celsius')).toBe('20°');
-    expect(formatTemperature(0, 'fahrenheit')).toBe('32°');
+  it('arredonda empates de meio grau para longe de zero', () => {
+    expect(convertTemperature(0.5, 'celsius')).toBe(1);
+    expect(convertTemperature(-0.5, 'celsius')).toBe(-1);
+  });
+});
+
+describe('formatTemperature', () => {
+  it('arredonda e inclui o símbolo da unidade selecionada', () => {
+    expect(formatTemperature(0, 'fahrenheit')).toBe('32 °F');
+    expect(formatTemperature(18.6, 'celsius')).toBe('19 °C');
   });
 
-  it('retorna o rótulo da unidade', () => {
-    expect(unitLabel('celsius')).toBe('°C');
-    expect(unitLabel('fahrenheit')).toBe('°F');
+  it('retorna null para temperatura ausente', () => {
+    expect(formatTemperature(null, 'celsius')).toBeNull();
+  });
+});
+
+describe('unitLabel', () => {
+  it('retorna o nome de cada unidade', () => {
+    expect(unitLabel('celsius')).toBe('Celsius');
+    expect(unitLabel('fahrenheit')).toBe('Fahrenheit');
   });
 });
